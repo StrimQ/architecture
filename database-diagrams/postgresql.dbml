@@ -1,82 +1,141 @@
 // https://dbdiagram.io/d/strimq-67aef4cf263d6cf9a025fe16
+enum tier {
+  free_trial [note: 'Free Trial tier will get their infras data wiped after 30 days']
+  bronze
+  silver
+  gold
+  platinum [note: 'Platinum tier will get their own dedicated infra']
+}
 
-Table Tenant {
-  id int [pk, increment]
+
+Table Tenants {
+  id UUID [pk]
   name varchar
+  domain varchar
+  tier tier
+  infras_id int [ref: > TenantInfras.id]
+
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table Source {
-  id int [pk, increment]
-  tenant_id int [ref: > Tenant.id]
+Table TenantInfras {
+  id UUID [pk]
   name varchar
+  kafka_brokers "varchar[]"
+  schema_registry_url varchar
+  kafka_connect_url varchar
+  kms_key varchar
+
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table SourceTag {
-  id int [pk, increment]
-  source_id int [ref: > Source.id]
-  key varchar
-  value text
-}
-
-Table SinkTag {
-  id int [pk, increment]
-  sink_id int [ref: > Sink.id]
-  key varchar
-  value text
-}
-
-Table PipelineTag {
-  id int [pk, increment]
-  pipeline_id int [ref: > Pipeline.id]
-  key varchar
-  value text
-}
-
-Table SourceUserConfig {
-  id int [pk, increment]
-  source_id int [ref: > Source.id]
-  key varchar
-  value text
-}
-
-Table SourceKCConfig {
-  id int [pk, increment]
-  source_id int [ref: > Source.id]
-  key varchar
-  value text
-}
-
-Table Topic {
-  id int [pk, increment]
+Table Sources {
+  id UUID [pk]
+  tenant_id int [ref: > Tenants.id]
   name varchar
-  source_id int [ref: > Source.id]
+  
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table Sink {
-  id int [pk, increment]
-  tenant_id int [ref: > Tenant.id]
-  name varchar
+Table SourceTags {
+  id UUID [pk]
+  source_id int [ref: > Sources.id]
+  key varchar
+  value varchar
+  
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table SinkUserConfig {
-  id int [pk, increment]
-  sink_id int [ref: > Sink.id]
+Table SinkTags {
+  id UUID [pk]
+  sink_id int [ref: > Sinks.id]
+  key varchar
+  value varchar
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table PipelineTags {
+  id UUID [pk]
+  pipeline_id int [ref: > Pipelines.id]
+  key varchar
+  value varchar
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table SourceUserConfigs {
+  id UUID [pk]
+  source_id int [ref: > Sources.id]
   key varchar
   value text
+  
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table SinkKCConfig {
-  id int [pk, increment]
-  sink_id int [ref: > Sink.id]
+Table SourceKCConfigs {
+  id UUID [pk]
+  source_id int [ref: > Sources.id]
   key varchar
   value text
+  
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table Pipeline {
-  id int [pk, increment]
-  tenant_id int [ref: > Tenant.id]
-  source_id int [ref: > Source.id]
-  sink_id int [ref: > Sink.id]
-  topic_id int [ref: > Topic.id]
+Table Topics {
+  id UUID [pk]
   name varchar
+  source_id int [ref: > Sources.id]
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table Sinks {
+  id UUID [pk]
+  tenant_id int [ref: > Tenants.id]
+  name varchar
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table SinkUserConfigs {
+  id UUID [pk]
+  sink_id int [ref: > Sinks.id]
+  key varchar
+  value text
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table SinkKCConfigs {
+  id UUID [pk]
+  sink_id int [ref: > Sinks.id]
+  key varchar
+  value text
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table Pipelines {
+  id UUID [pk]
+  tenant_id int [ref: > Tenants.id]
+  source_id int [ref: > Sources.id]
+  sink_id int [ref: > Sinks.id]
+  topic_id int [ref: > Topics.id]
+  name varchar
+  
+  created_at timestamp
+  updated_at timestamp
 }
