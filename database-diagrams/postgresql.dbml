@@ -1,0 +1,82 @@
+// https://dbdiagram.io/d/strimq-67aef4cf263d6cf9a025fe16
+
+Table Tenant {
+  id int [pk, increment]
+  name varchar
+}
+
+Table Source {
+  id int [pk, increment]
+  tenant_id int [ref: > Tenant.id]
+  name varchar
+}
+
+Table SourceTag {
+  id int [pk, increment]
+  source_id int [ref: > Source.id]
+  key varchar
+  value text
+}
+
+Table SinkTag {
+  id int [pk, increment]
+  sink_id int [ref: > Sink.id]
+  key varchar
+  value text
+}
+
+Table PipelineTag {
+  id int [pk, increment]
+  pipeline_id int [ref: > Pipeline.id]
+  key varchar
+  value text
+}
+
+Table SourceUserConfig {
+  id int [pk, increment]
+  source_id int [ref: > Source.id]
+  key varchar
+  value text
+}
+
+Table SourceKCConfig {
+  id int [pk, increment]
+  source_id int [ref: > Source.id]
+  key varchar
+  value text
+}
+
+Table Topic {
+  id int [pk, increment]
+  name varchar
+  source_id int [ref: > Source.id]
+}
+
+Table Sink {
+  id int [pk, increment]
+  tenant_id int [ref: > Tenant.id]
+  name varchar
+}
+
+Table SinkUserConfig {
+  id int [pk, increment]
+  sink_id int [ref: > Sink.id]
+  key varchar
+  value text
+}
+
+Table SinkKCConfig {
+  id int [pk, increment]
+  sink_id int [ref: > Sink.id]
+  key varchar
+  value text
+}
+
+Table Pipeline {
+  id int [pk, increment]
+  tenant_id int [ref: > Tenant.id]
+  source_id int [ref: > Source.id]
+  sink_id int [ref: > Sink.id]
+  topic_id int [ref: > Topic.id]
+  name varchar
+}
