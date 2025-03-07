@@ -10,10 +10,10 @@ enum tier {
 
 Table Tenants {
   id UUID [pk]
-  name varchar
-  domain varchar
+  name varchar(255)
+  domain varchar(255)
   tier tier
-  infras_id int [ref: > TenantInfras.id]
+  infras_id UUID [ref: > TenantInfras.id]
 
   created_at timestamp
   updated_at timestamp
@@ -21,11 +21,11 @@ Table Tenants {
 
 Table TenantInfras {
   id UUID [pk]
-  name varchar
-  kafka_brokers "varchar[]"
-  schema_registry_url varchar
-  kafka_connect_url varchar
-  kms_key varchar
+  name varchar(255)
+  kafka_brokers "varchar(255)[]"
+  schema_registry_url varchar(255)
+  kafka_connect_url varchar(255)
+  kms_key varchar(255)
 
   created_at timestamp
   updated_at timestamp
@@ -33,8 +33,8 @@ Table TenantInfras {
 
 Table Sources {
   id UUID [pk]
-  tenant_id int [ref: > Tenants.id]
-  name varchar
+  tenant_id UUID [ref: > Tenants.id]
+  name varchar(255)
   
   created_at timestamp
   updated_at timestamp
@@ -42,39 +42,41 @@ Table Sources {
 
 Table SourceTags {
   id UUID [pk]
-  source_id int [ref: > Sources.id]
-  key varchar
-  value varchar
+  source_id UUID [ref: > Sources.id]
+  key varchar(255)
+  value varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table SinkTags {
+Table SourceAppConfigs {
   id UUID [pk]
-  sink_id int [ref: > Sinks.id]
-  key varchar
-  value varchar
+  source_id UUID [ref: > Sources.id]
+  key varchar(255)
+  value varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table PipelineTags {
+Table SourceAppTables {
   id UUID [pk]
-  pipeline_id int [ref: > Pipelines.id]
-  key varchar
-  value varchar
+  source_id UUID [ref: > Sources.id]
+  table_name varchar(255)
+  schema varchar(255)
+  database varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table SourceUserConfigs {
+Table SourceKCConnectors {
   id UUID [pk]
-  source_id int [ref: > Sources.id]
-  key varchar
-  value text
+  source_id UUID [ref: > Sources.id]
+  name varchar(255) [not null, unique]
+  connector_class varchar(255)
+  version varchar(255)
   
   created_at timestamp
   updated_at timestamp
@@ -82,18 +84,9 @@ Table SourceUserConfigs {
 
 Table SourceKCConfigs {
   id UUID [pk]
-  source_id int [ref: > Sources.id]
-  key varchar
+  source_kc_connector_id UUID [ref: > SourceKCConnectors.id]
+  key varchar(255)
   value text
-  
-  created_at timestamp
-  updated_at timestamp
-}
-
-Table Topics {
-  id UUID [pk]
-  name varchar
-  source_id int [ref: > Sources.id]
   
   created_at timestamp
   updated_at timestamp
@@ -101,27 +94,48 @@ Table Topics {
 
 Table Sinks {
   id UUID [pk]
-  tenant_id int [ref: > Tenants.id]
-  name varchar
+  tenant_id UUID [ref: > Tenants.id]
+  name varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table SinkUserConfigs {
+Table SinkTags {
   id UUID [pk]
-  sink_id int [ref: > Sinks.id]
-  key varchar
-  value text
+  sink_id UUID [ref: > Sinks.id]
+  key varchar(255)
+  value varchar(255)
   
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table SinkAppConfigs {
+  id UUID [pk]
+  sink_id UUID [ref: > Sinks.id]
+  key varchar(255)
+  value varchar(255)
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table SinkKCConnectors {
+  id UUID [pk]
+  sink_id UUID [ref: > Sinks.id]
+  name varchar(255) [not null, unique]
+  connector_class varchar(255)
+  version varchar(255)
+
   created_at timestamp
   updated_at timestamp
 }
 
 Table SinkKCConfigs {
   id UUID [pk]
-  sink_id int [ref: > Sinks.id]
-  key varchar
+  sink_kc_connector_id UUID [ref: > SinkKCConnectors.id]
+  key varchar(255)
   value text
   
   created_at timestamp
@@ -130,11 +144,39 @@ Table SinkKCConfigs {
 
 Table Pipelines {
   id UUID [pk]
-  tenant_id int [ref: > Tenants.id]
-  source_id int [ref: > Sources.id]
-  sink_id int [ref: > Sinks.id]
-  topic_id int [ref: > Topics.id]
-  name varchar
+  tenant_id UUID [ref: > Tenants.id]
+  source_id UUID [ref: > Sources.id]
+  sink_id UUID [ref: > Sinks.id]
+  name varchar(255)
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table PipelineTags {
+  id UUID [pk]
+  pipeline_id int [ref: > Pipelines.id]
+  key varchar(255)
+  value varchar(255)
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table PipelineAppConfigs {
+  id UUID [pk]
+  pipeline_id UUID [ref: > Pipelines.id]
+  key varchar(255)
+  value varchar(255)
+  
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table PipelineTables {
+  id UUID [pk]
+  pipeline_id UUID [ref: > Pipelines.id]
+  table_id UUID [ref: > SourceAppTables.id]
   
   created_at timestamp
   updated_at timestamp
