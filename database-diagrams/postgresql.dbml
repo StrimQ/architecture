@@ -84,7 +84,7 @@ Table source_app_tables {
 Table source_app_columns {
   table_id UUID [ref: > source_app_tables.id]
   column_name varchar(255)
-  column_type varchar(255)
+  data_type varchar(255)
   
   created_at timestamp
   updated_at timestamp
