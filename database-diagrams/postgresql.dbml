@@ -8,18 +8,18 @@ enum tier {
 }
 
 
-Table Tenants {
+Table tenants {
   id UUID [pk]
   name varchar(255)
   domain varchar(255)
   tier tier
-  infras_id UUID [ref: > TenantInfras.id]
+  infras_id UUID [ref: > tenant_infras.id]
 
   created_at timestamp
   updated_at timestamp
 }
 
-Table TenantInfras {
+Table tenant_infras {
   id UUID [pk]
   name varchar(255)
   kafka_brokers "varchar(255)[]"
@@ -31,49 +31,72 @@ Table TenantInfras {
   updated_at timestamp
 }
 
-Table Sources {
+Table sources {
   id UUID [pk]
-  tenant_id UUID [ref: > Tenants.id]
+  tenant_id UUID [ref: > tenants.id]
   name varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table SourceTags {
-  id UUID [pk]
-  source_id UUID [ref: > Sources.id]
+Table source_tags {
+  source_id UUID [ref: > sources.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (source_id, key) [pk]
+  }
 }
 
-Table SourceAppConfigs {
-  id UUID [pk]
-  source_id UUID [ref: > Sources.id]
+Table source_app_configs {
+  source_id UUID [ref: > sources.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (source_id, key) [pk]
+  }
 }
 
-Table SourceAppTables {
+Table source_app_tables {
   id UUID [pk]
-  source_id UUID [ref: > Sources.id]
+  source_id UUID [ref: > sources.id]
+  db_name varchar(255)
+  schema_name varchar(255)
   table_name varchar(255)
-  schema varchar(255)
-  database varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (source_id, db_name, schema_name, table_name) [unique]
+  }
 }
 
-Table SourceKCConnectors {
+Table source_app_columns {
+  table_id UUID [ref: > source_app_tables.id]
+  column_name varchar(255)
+  column_type varchar(255)
+  
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (table_id, column_name) [pk]
+  }
+}
+
+Table source_kc_connectors {
   id UUID [pk]
-  source_id UUID [ref: > Sources.id]
+  source_id UUID [ref: > sources.id]
   name varchar(255) [not null, unique]
   connector_class varchar(255)
   version varchar(255)
@@ -82,48 +105,57 @@ Table SourceKCConnectors {
   updated_at timestamp
 }
 
-Table SourceKCConfigs {
-  id UUID [pk]
-  source_kc_connector_id UUID [ref: > SourceKCConnectors.id]
+Table source_kc_configs {
+  kc_id UUID [ref: > source_kc_connectors.id]
   key varchar(255)
   value text
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (kc_id, key) [pk]
+  }
 }
 
-Table Sinks {
+Table sinks {
   id UUID [pk]
-  tenant_id UUID [ref: > Tenants.id]
+  tenant_id UUID [ref: > tenants.id]
   name varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table SinkTags {
-  id UUID [pk]
-  sink_id UUID [ref: > Sinks.id]
+Table sink_tags {
+  sink_id UUID [ref: > sinks.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (sink_id, key) [pk]
+  }
 }
 
-Table SinkAppConfigs {
-  id UUID [pk]
-  sink_id UUID [ref: > Sinks.id]
+Table sink_app_configs {
+  sink_id UUID [ref: > sinks.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (sink_id, key) [pk]
+  }
 }
 
-Table SinkKCConnectors {
+Table sink_kc_connectors {
   id UUID [pk]
-  sink_id UUID [ref: > Sinks.id]
+  sink_id UUID [ref: > sinks.id]
   name varchar(255) [not null, unique]
   connector_class varchar(255)
   version varchar(255)
@@ -132,52 +164,64 @@ Table SinkKCConnectors {
   updated_at timestamp
 }
 
-Table SinkKCConfigs {
-  id UUID [pk]
-  sink_kc_connector_id UUID [ref: > SinkKCConnectors.id]
+Table sink_kc_configs {
+  kc_id UUID [ref: > sink_kc_connectors.id]
   key varchar(255)
   value text
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (kc_id, key) [pk]
+  }
 }
 
-Table Pipelines {
+Table pipelines {
   id UUID [pk]
-  tenant_id UUID [ref: > Tenants.id]
-  source_id UUID [ref: > Sources.id]
-  sink_id UUID [ref: > Sinks.id]
+  tenant_id UUID [ref: > tenants.id]
+  source_id UUID [ref: > sources.id]
+  sink_id UUID [ref: > sinks.id]
   name varchar(255)
   
   created_at timestamp
   updated_at timestamp
 }
 
-Table PipelineTags {
-  id UUID [pk]
-  pipeline_id int [ref: > Pipelines.id]
+Table pipeline_tags {
+  pipeline_id int [ref: > pipelines.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (pipeline_id, key) [pk]
+  }
 }
 
-Table PipelineAppConfigs {
-  id UUID [pk]
-  pipeline_id UUID [ref: > Pipelines.id]
+Table pipeline_app_configs {
+  pipeline_id UUID [ref: > pipelines.id]
   key varchar(255)
   value varchar(255)
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (pipeline_id, key) [pk]
+  }
 }
 
-Table PipelineTables {
-  id UUID [pk]
-  pipeline_id UUID [ref: > Pipelines.id]
-  table_id UUID [ref: > SourceAppTables.id]
+Table pipeline_source_app_tables {
+  pipeline_id UUID [ref: > pipelines.id]
+  table_id UUID [ref: > source_app_tables.id]
   
   created_at timestamp
   updated_at timestamp
+
+  indexes {
+    (pipeline_id, table_id) [pk]
+  }
 }
