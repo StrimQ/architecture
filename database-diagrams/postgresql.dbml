@@ -13,10 +13,32 @@ Table tenants {
   name varchar(255)
   domain varchar(255)
   tier tier
-  infras_id UUID [ref: > tenant_infras.id]
+  infra_id UUID [ref: > tenant_infras.id]
 
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
+}
+
+Table users {
+  id UUID [pk]
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table user_tenant {
+  user_id UUID [ref: > users.id]
+  tenant_id UUID [ref: > tenants.id]
+
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    (user_id, tenant_id) [pk]
+  }
 }
 
 Table tenant_infras {
@@ -29,6 +51,7 @@ Table tenant_infras {
 
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
 Table sources {
@@ -36,17 +59,23 @@ Table sources {
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
   
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
 Table source_tags {
   source_id UUID [ref: > sources.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (source_id, key) [pk]
@@ -57,9 +86,12 @@ Table source_app_configs {
   source_id UUID [ref: > sources.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (source_id, key) [pk]
@@ -72,9 +104,12 @@ Table source_app_tables {
   db_name varchar(255)
   schema_name varchar(255)
   table_name varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (source_id, db_name, schema_name, table_name) [unique]
@@ -85,9 +120,12 @@ Table source_app_columns {
   table_id UUID [ref: > source_app_tables.id]
   column_name varchar(255)
   data_type varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (table_id, column_name) [pk]
@@ -100,77 +138,98 @@ Table source_kc_connectors {
   name varchar(255) [not null, unique]
   connector_class varchar(255)
   version varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
 Table source_kc_configs {
   kc_id UUID [ref: > source_kc_connectors.id]
   key varchar(255)
   value text
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (kc_id, key) [pk]
   }
 }
 
-Table sinks {
+Table destinations {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
-Table sink_tags {
-  sink_id UUID [ref: > sinks.id]
+Table destination_tags {
+  destination_id UUID [ref: > destinations.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
-    (sink_id, key) [pk]
+    (destination_id, key) [pk]
   }
 }
 
-Table sink_app_configs {
-  sink_id UUID [ref: > sinks.id]
+Table destination_app_configs {
+  destination_id UUID [ref: > destinations.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
-    (sink_id, key) [pk]
+    (destination_id, key) [pk]
   }
 }
 
-Table sink_kc_connectors {
+Table destination_kc_connectors {
   id UUID [pk]
-  sink_id UUID [ref: > sinks.id]
+  destination_id UUID [ref: > destinations.id]
   name varchar(255) [not null, unique]
   connector_class varchar(255)
   version varchar(255)
 
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
-Table sink_kc_configs {
-  kc_id UUID [ref: > sink_kc_connectors.id]
+Table destination_kc_configs {
+  kc_id UUID [ref: > destination_kc_connectors.id]
   key varchar(255)
   value text
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (kc_id, key) [pk]
@@ -181,20 +240,26 @@ Table pipelines {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   source_id UUID [ref: > sources.id]
-  sink_id UUID [ref: > sinks.id]
+  destination_id UUID [ref: > destinations.id]
   name varchar(255)
   
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 }
 
 Table pipeline_tags {
   pipeline_id int [ref: > pipelines.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (pipeline_id, key) [pk]
@@ -205,9 +270,12 @@ Table pipeline_app_configs {
   pipeline_id UUID [ref: > pipelines.id]
   key varchar(255)
   value varchar(255)
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (pipeline_id, key) [pk]
@@ -217,9 +285,12 @@ Table pipeline_app_configs {
 Table pipeline_source_app_tables {
   pipeline_id UUID [ref: > pipelines.id]
   table_id UUID [ref: > source_app_tables.id]
-  
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
+  deleted_at timestamp
 
   indexes {
     (pipeline_id, table_id) [pk]
