@@ -17,7 +17,6 @@ Table tenants {
 
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table users {
@@ -25,7 +24,6 @@ Table users {
 
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table user_tenant {
@@ -34,7 +32,6 @@ Table user_tenant {
 
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (user_id, tenant_id) [pk]
@@ -51,7 +48,6 @@ Table tenant_infras {
 
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table sources {
@@ -63,7 +59,6 @@ Table sources {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table source_tags {
@@ -75,7 +70,6 @@ Table source_tags {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (source_id, key) [pk]
@@ -91,7 +85,6 @@ Table source_app_configs {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (source_id, key) [pk]
@@ -109,7 +102,6 @@ Table source_app_tables {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (source_id, db_name, schema_name, table_name) [unique]
@@ -125,7 +117,6 @@ Table source_app_columns {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (table_id, column_name) [pk]
@@ -143,19 +134,17 @@ Table source_kc_connectors {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table source_kc_configs {
   kc_id UUID [ref: > source_kc_connectors.id]
   key varchar(255)
-  value text
+  value text [null]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (kc_id, key) [pk]
@@ -171,7 +160,6 @@ Table destinations {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table destination_tags {
@@ -183,7 +171,6 @@ Table destination_tags {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (destination_id, key) [pk]
@@ -199,7 +186,6 @@ Table destination_app_configs {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (destination_id, key) [pk]
@@ -217,19 +203,17 @@ Table destination_kc_connectors {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table destination_kc_configs {
   kc_id UUID [ref: > destination_kc_connectors.id]
   key varchar(255)
-  value text
+  value text [null]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (kc_id, key) [pk]
@@ -247,7 +231,6 @@ Table pipelines {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 }
 
 Table pipeline_tags {
@@ -259,7 +242,6 @@ Table pipeline_tags {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (pipeline_id, key) [pk]
@@ -275,7 +257,6 @@ Table pipeline_app_configs {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (pipeline_id, key) [pk]
@@ -290,7 +271,6 @@ Table pipeline_source_app_tables {
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
   updated_at timestamp
-  deleted_at timestamp
 
   indexes {
     (pipeline_id, table_id) [pk]
