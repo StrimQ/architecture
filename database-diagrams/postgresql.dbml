@@ -1,4 +1,3 @@
-// https://dbdiagram.io/d/strimq-67aef4cf263d6cf9a025fe16
 enum tier {
   free_trial [note: 'Free Trial tier will get their infras data wiped after 30 days']
   bronze
@@ -26,7 +25,7 @@ Table users {
   updated_at timestamp
 }
 
-Table user_tenant {
+Table users_tenants {
   user_id UUID [ref: > users.id]
   tenant_id UUID [ref: > tenants.id]
 
@@ -126,7 +125,7 @@ Table source_app_columns {
 Table source_kc_connectors {
   id UUID [pk]
   source_id UUID [ref: > sources.id]
-  name varchar(255) [not null, unique]
+  name varchar(255) [unique]
   connector_class varchar(255)
   version varchar(255)
 
@@ -139,7 +138,7 @@ Table source_kc_connectors {
 Table source_kc_configs {
   kc_id UUID [ref: > source_kc_connectors.id]
   key varchar(255)
-  value text [null]
+  value text
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -208,7 +207,7 @@ Table destination_kc_connectors {
 Table destination_kc_configs {
   kc_id UUID [ref: > destination_kc_connectors.id]
   key varchar(255)
-  value text [null]
+  value text
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -263,7 +262,7 @@ Table pipeline_app_configs {
   }
 }
 
-Table pipeline_source_app_tables {
+Table pipelines_source_app_tables {
   pipeline_id UUID [ref: > pipelines.id]
   table_id UUID [ref: > source_app_tables.id]
 
