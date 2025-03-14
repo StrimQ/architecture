@@ -48,6 +48,18 @@ Table tenant_infras {
   updated_at timestamp
 }
 
+Table tags {
+  id UUID [pk]
+  tenant_id UUID [ref: > tenants.id]
+  key varchar(255)
+  value varchar(255)
+
+  created_by_user_id UUID [ref: > users.id]
+  updated_by_user_id UUID [ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
 enum source_engine {
   mysql
   postgresql
@@ -67,8 +79,7 @@ Table sources {
 
 Table source_tags {
   source_id UUID [ref: > sources.id]
-  key varchar(255)
-  value varchar(255)
+  tag_id UUID [ref: > tags.id]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -76,7 +87,7 @@ Table source_tags {
   updated_at timestamp
 
   indexes {
-    (source_id, key) [pk]
+    (source_id, tag_id) [pk]
   }
 }
 
@@ -146,8 +157,7 @@ Table destinations {
 
 Table destination_tags {
   destination_id UUID [ref: > destinations.id]
-  key varchar(255)
-  value varchar(255)
+  tag_id UUID [ref: > tags.id]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -155,7 +165,7 @@ Table destination_tags {
   updated_at timestamp
 
   indexes {
-    (destination_id, key) [pk]
+    (destination_id, tag_id) [pk]
   }
 }
 
@@ -188,9 +198,8 @@ Table pipelines {
 }
 
 Table pipeline_tags {
-  pipeline_id int [ref: > pipelines.id]
-  key varchar(255)
-  value varchar(255)
+  pipeline_id UUID [ref: > pipelines.id]
+  tag_id UUID [ref: > tags.id]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -198,7 +207,7 @@ Table pipeline_tags {
   updated_at timestamp
 
   indexes {
-    (pipeline_id, key) [pk]
+    (pipeline_id, tag_id) [pk]
   }
 }
 
@@ -217,7 +226,7 @@ Table pipeline_configs {
   }
 }
 
-Table pipelines_source_tables {
+Table pipeline_source_tables {
   pipeline_id UUID [ref: > pipelines.id]
   table_id UUID [ref: > source_tables.id]
 
