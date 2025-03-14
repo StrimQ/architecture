@@ -6,7 +6,6 @@ enum tier {
   platinum [note: 'Platinum tier will get their own dedicated infra']
 }
 
-
 Table tenants {
   id UUID [pk]
   name varchar(255)
@@ -25,9 +24,9 @@ Table users {
   updated_at timestamp
 }
 
-Table users_tenants {
-  user_id UUID [ref: > users.id]
+Table tenant_users {
   tenant_id UUID [ref: > tenants.id]
+  user_id UUID [ref: > users.id]
 
   created_at timestamp
   updated_at timestamp
@@ -49,11 +48,17 @@ Table tenant_infras {
   updated_at timestamp
 }
 
+enum source_engine {
+  mysql
+  postgresql
+}
+
 Table sources {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
-  
+  engine source_engine
+
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
@@ -75,10 +80,10 @@ Table source_tags {
   }
 }
 
-Table source_app_configs {
+Table source_configs {
   source_id UUID [ref: > sources.id]
   key varchar(255)
-  value varchar(255)
+  value varchar(255) [null]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -90,7 +95,7 @@ Table source_app_configs {
   }
 }
 
-Table source_app_tables {
+Table source_tables {
   id UUID [pk]
   source_id UUID [ref: > sources.id]
   db_name varchar(255)
@@ -107,8 +112,8 @@ Table source_app_tables {
   }
 }
 
-Table source_app_columns {
-  table_id UUID [ref: > source_app_tables.id]
+Table source_table_columns {
+  table_id UUID [ref: > source_tables.id]
   column_name varchar(255)
   data_type varchar(255)
 
@@ -122,38 +127,16 @@ Table source_app_columns {
   }
 }
 
-Table source_kc_connectors {
-  id UUID [pk]
-  source_id UUID [ref: > sources.id]
-  name varchar(255) [unique]
-  connector_class varchar(255)
-  version varchar(255)
-
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
-  created_at timestamp
-  updated_at timestamp
-}
-
-Table source_kc_configs {
-  kc_id UUID [ref: > source_kc_connectors.id]
-  key varchar(255)
-  value text
-
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
-  created_at timestamp
-  updated_at timestamp
-
-  indexes {
-    (kc_id, key) [pk]
-  }
+enum destination_engine {
+  mysql
+  postgresql
 }
 
 Table destinations {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
+  engine destination_engine
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -176,10 +159,10 @@ Table destination_tags {
   }
 }
 
-Table destination_app_configs {
+Table destination_configs {
   destination_id UUID [ref: > destinations.id]
   key varchar(255)
-  value varchar(255)
+  value varchar(255) [null]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -188,34 +171,6 @@ Table destination_app_configs {
 
   indexes {
     (destination_id, key) [pk]
-  }
-}
-
-Table destination_kc_connectors {
-  id UUID [pk]
-  destination_id UUID [ref: > destinations.id]
-  name varchar(255) [not null, unique]
-  connector_class varchar(255)
-  version varchar(255)
-
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
-  created_at timestamp
-  updated_at timestamp
-}
-
-Table destination_kc_configs {
-  kc_id UUID [ref: > destination_kc_connectors.id]
-  key varchar(255)
-  value text
-
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
-  created_at timestamp
-  updated_at timestamp
-
-  indexes {
-    (kc_id, key) [pk]
   }
 }
 
@@ -247,10 +202,10 @@ Table pipeline_tags {
   }
 }
 
-Table pipeline_app_configs {
+Table pipeline_configs {
   pipeline_id UUID [ref: > pipelines.id]
   key varchar(255)
-  value varchar(255)
+  value varchar(255) [null]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
@@ -262,9 +217,9 @@ Table pipeline_app_configs {
   }
 }
 
-Table pipelines_source_app_tables {
+Table pipelines_source_tables {
   pipeline_id UUID [ref: > pipelines.id]
-  table_id UUID [ref: > source_app_tables.id]
+  table_id UUID [ref: > source_tables.id]
 
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
