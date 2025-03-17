@@ -6,16 +6,6 @@ enum tier {
   platinum [note: 'Platinum tier will get their own dedicated infra']
 }
 
-enum source_engine {
-  mysql
-  postgresql
-}
-
-enum destination_engine {
-  mysql
-  postgresql
-}
-
 Table tenants {
   id UUID [pk]
   name varchar(255)
@@ -42,7 +32,7 @@ Table tenant_users {
   updated_at timestamp
 
   indexes {
-    (user_id, tenant_id) [pk]
+    (tenant_id, user_id) [pk]
   }
 }
 
@@ -70,22 +60,34 @@ Table tags {
   updated_at timestamp
 }
 
+enum topic_producer_type {
+  source
+  transformer
+}
+
 Table topics {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   name varchar(255) // Kafka topic name, e.g., "tenant1.source1.collectionA"
-  producer_type enum ('source', 'transformer')
+  producer_type topic_producer_type
   producer_id UUID // References sources.id or transformers.id based on producer_type
+
   created_at timestamp
   updated_at timestamp
+}
+
+enum source_engine {
+  mysql
+  postgresql
 }
 
 Table sources {
   id UUID [pk]
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
-  engine source_engine // Enum for source type (e.g., Kafka Connect)
+  engine source_engine
   config JSONB // Connection details, streaming settings
+
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
@@ -96,16 +98,16 @@ Table source_outputs {
   id UUID [pk]
   source_id UUID [ref: > sources.id]
   topic_id UUID [ref: > topics.id] // Topic this collection streams to
-  database_name VARCHAR(255)
-  group_name VARCHAR(255)
-  name VARCHAR(255)
+  database_name VARCHAR(255) // database
+  group_name VARCHAR(255) // schema/namespace
+  collection_name VARCHAR(255) // /collection/table
   config JSONB // Streaming-specific config
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+
   created_at timestamp
   updated_at timestamp
+
   indexes {
-    (source_id)
+    (source_id, database_name, group_name, collection_name) [unique] // Ensures unique collection per source
   }
 }
 
@@ -114,6 +116,7 @@ Table transformers {
   tenant_id UUID [ref: > tenants.id]
   name varchar(255)
   config JSONB // Flink job config, transformation logic
+
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
@@ -123,15 +126,11 @@ Table transformers {
 Table transformer_inputs {
   id UUID [pk]
   transformer_id UUID [ref: > transformers.id]
-  topic_id UUID [ref: > topics.id] // Output topic produced by transformer
-  config JSONB // Output-specific config
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+  topic_id UUID [ref: > topics.id] // Input topic consumed by transformer
+  config JSONB // Input-specific config
+
   created_at timestamp
   updated_at timestamp
-  indexes {
-    (transformer_id)
-  }
 }
 
 Table transformer_outputs {
@@ -139,13 +138,14 @@ Table transformer_outputs {
   transformer_id UUID [ref: > transformers.id]
   topic_id UUID [ref: > topics.id] // Output topic produced by transformer
   config JSONB // Output-specific config
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+
   created_at timestamp
   updated_at timestamp
-  indexes {
-    (transformer_id)
-  }
+}
+
+enum destination_engine {
+  mysql
+  postgresql
 }
 
 Table destinations {
@@ -154,6 +154,7 @@ Table destinations {
   name varchar(255)
   engine destination_engine // Enum for destination type
   config JSONB // Connection details, write settings
+
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
@@ -167,8 +168,7 @@ Table destination_inputs {
   group_name VARCHAR(255)
   name VARCHAR(255)
   config JSONB // Collection-specific config
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+
   created_at timestamp
   updated_at timestamp
   indexes {
@@ -183,6 +183,7 @@ Table pipelines {
   source_id UUID [ref: > sources.id]
   destination_id UUID [ref: > destinations.id]
   config JSONB // Pipeline-wide settings
+
   created_by_user_id UUID [ref: > users.id]
   updated_by_user_id UUID [ref: > users.id]
   created_at timestamp
@@ -193,14 +194,13 @@ Table pipeline_transformers {
   id UUID [pk]
   pipeline_id UUID [ref: > pipelines.id]
   transformer_id UUID [ref: > transformers.id]
-  sequence int // Order in pipeline (1, 2, 3, ...)
+  stage int // Order in pipeline (1, 2, 3, ...)
   config JSONB // Transformer-specific pipeline config
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+
   created_at timestamp
   updated_at timestamp
   indexes {
-    (pipeline_id, sequence) [unique] // Ensures unique order per pipeline
+    (pipeline_id, stage) [unique] // Ensures unique order per pipeline
   }
 }
 
@@ -208,25 +208,16 @@ Table pipeline_transformer_inputs {
   id UUID [pk]
   pipeline_transformer_id UUID [ref: > pipeline_transformers.id]
   topic_id UUID [ref: > topics.id] // Input topic from previous stage
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+
   created_at timestamp
   updated_at timestamp
-  indexes {
-    (pipeline_transformer_id)
-  }
 }
 
 Table pipeline_destination_inputs {
   id UUID [pk]
   pipeline_id UUID [ref: > pipelines.id]
-  topic_id UUID [ref: > topics.id] // Input topic from last transformer
-  destination_input_id UUID [ref: > destination_inputs.id] // Target collection
-  created_by_user_id UUID [ref: > users.id]
-  updated_by_user_id UUID [ref: > users.id]
+  topic_id UUID [ref: > topics.id] // Output topics from last transformer or source to destination as input
+
   created_at timestamp
   updated_at timestamp
-  indexes {
-    (pipeline_id)
-  }
 }
