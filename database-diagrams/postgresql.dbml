@@ -170,15 +170,14 @@ Table transformers {
 Table transformer_inputs {
   tenant_id UUID
   transformer_id UUID
-  transformer_input_id UUID // Input topic consumed by transformer
-  topic_id UUID
+  topic_id UUID // Input topic consumed by transformer
   config JSONB // Input-specific config
 
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    (tenant_id, transformer_id, transformer_input_id) [pk]
+    (tenant_id, transformer_id, topic_id) [pk]
     (tenant_id, transformer_id) [ref: > transformers.(tenant_id, transfomer_id)]
     (tenant_id, topic_id) [ref: > topics.(tenant_id, topic_id)]
   }
@@ -187,7 +186,6 @@ Table transformer_inputs {
 Table transformer_outputs {
   tenant_id UUID
   transformer_id UUID
-  transformer_output_id UUID
   topic_id UUID // Output topic produced by transformer
   config JSONB // Output-specific config
 
@@ -195,7 +193,7 @@ Table transformer_outputs {
   updated_at timestamp
 
   indexes {
-    (tenant_id, transformer_id, transformer_output_id) [pk]
+    (tenant_id, transformer_id, topic_id) [pk]
     (tenant_id, transformer_id) [ref: > transformers.(tenant_id, transfomer_id)]
     (tenant_id, topic_id) [ref: > topics.(tenant_id, topic_id)]
   }
