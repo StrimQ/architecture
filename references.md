@@ -1,0 +1,1 @@
+https://dba.stackexchange.com/questions/98118/composite-primary-key-in-multi-tenant-sql-server-database
