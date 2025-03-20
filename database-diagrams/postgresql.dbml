@@ -131,7 +131,6 @@ Table sources {
 Table source_outputs {
   tenant_id UUID
   source_id UUID
-  source_output_id UUID
   topic_id UUID
   database_name VARCHAR(255) // database
   group_name VARCHAR(255) // schema/namespace
@@ -142,7 +141,7 @@ Table source_outputs {
   updated_at timestamp
 
   indexes {
-    (tenant_id, source_id, source_output_id) [pk]
+    (tenant_id, source_id, topic_id) [pk]
     (tenant_id, source_id) [ref: > sources.(tenant_id, source_id)]
     (tenant_id, topic_id) [ref: > topics.(tenant_id, topic_id)]
   }
