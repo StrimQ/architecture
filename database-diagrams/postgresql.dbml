@@ -8,13 +8,13 @@ enum tier {
 
 Table tenants {
   tenant_id UUID
-  name varchar(255)
-  domain varchar(255)
-  tier tier
-  infra_id UUID
+  name varchar(255) [not null]
+  domain varchar(255) [not null]
+  tier tier [not null]
+  infra_id UUID [not null]
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id) [pk]
@@ -26,8 +26,8 @@ Ref: tenants.infra_id > tenant_infras.tenant_infra_id
 Table users {
   user_id UUID
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (user_id) [pk]
@@ -38,8 +38,8 @@ Table tenant_users {
   tenant_id UUID
   user_id UUID
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, user_id) [pk]
@@ -51,14 +51,14 @@ Ref: tenant_users.user_id > users.user_id
 
 Table tenant_infras {
   tenant_infra_id UUID
-  name varchar(255)
-  kafka_brokers "varchar(255)[]"
-  schema_registry_url varchar(255)
-  kafka_connect_url varchar(255)
-  kms_key varchar(255)
+  name varchar(255) [not null]
+  kafka_brokers "varchar(255)[]" [not null]
+  schema_registry_url varchar(255) [not null]
+  kafka_connect_url varchar(255) [not null]
+  kms_key varchar(255) [not null]
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_infra_id) [pk]
@@ -68,13 +68,13 @@ Table tenant_infras {
 Table tags {
   tenant_id UUID
   tag_id UUID
-  key varchar(255)
-  value varchar(255)
+  key varchar(255) [not null]
+  value varchar(255) [not null]
 
-  created_by_user_id UUID
-  updated_by_user_id UUID
-  created_at timestamp
-  updated_at timestamp
+  created_by_user_id UUID [not null]
+  updated_by_user_id UUID [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, tag_id) [pk]
@@ -93,12 +93,12 @@ enum topic_producer_type {
 Table topics {
   tenant_id UUID
   topic_id UUID
-  name varchar(255) // Kafka topic name, e.g., "tenant1.source1.collectionA"
-  producer_type topic_producer_type
-  producer_id UUID // References sources.source_id or transformers.transfomer_id based on producer_type
+  name varchar(255) [not null] // Kafka topic name, e.g., "tenant1.source1.collectionA"
+  producer_type topic_producer_type [not null]
+  producer_id UUID [not null] // References sources.source_id or transformers.transfomer_id based on producer_type
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, topic_id) [pk]
@@ -115,14 +115,14 @@ enum source_engine {
 Table sources {
   tenant_id UUID
   source_id UUID
-  name varchar(255)
-  engine source_engine
-  config JSONB // Connection details, streaming settings
+  name varchar(255) [not null]
+  engine source_engine [not null]
+  config JSONB [not null] // Connection details, streaming settings
 
-  created_by_user_id UUID
-  updated_by_user_id UUID
-  created_at timestamp
-  updated_at timestamp
+  created_by_user_id UUID [not null]
+  updated_by_user_id UUID [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, source_id) [pk]
@@ -137,13 +137,13 @@ Table source_outputs {
   tenant_id UUID
   source_id UUID
   topic_id UUID
-  database_name VARCHAR(255) // database
-  group_name VARCHAR(255) // schema/namespace
-  collection_name VARCHAR(255) // /collection/table
-  config JSONB // Streaming-specific config
+  database_name VARCHAR(255) [not null] // database
+  group_name VARCHAR(255) [not null] // schema/namespace
+  collection_name VARCHAR(255) [not null] // /collection/table
+  config JSONB [not null] // Streaming-specific config
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, source_id, topic_id) [pk]
@@ -156,13 +156,13 @@ Ref: source_outputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
 Table transformers {
   tenant_id UUID
   transfomer_id UUID
-  name varchar(255)
-  config JSONB // Flink job config, transformation logic
+  name varchar(255) [not null]
+  config JSONB [not null] // Flink job config, transformation logic
 
-  created_by_user_id UUID
-  updated_by_user_id UUID
-  created_at timestamp
-  updated_at timestamp
+  created_by_user_id UUID [not null]
+  updated_by_user_id UUID [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, transfomer_id) [pk]
@@ -177,10 +177,10 @@ Table transformer_inputs {
   tenant_id UUID
   transformer_id UUID
   topic_id UUID // Input topic consumed by transformer
-  config JSONB // Input-specific config
+  config JSONB [not null] // Input-specific config
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, transformer_id, topic_id) [pk]
@@ -194,10 +194,10 @@ Table transformer_outputs {
   tenant_id UUID
   transformer_id UUID
   topic_id UUID // Output topic produced by transformer
-  config JSONB // Output-specific config
+  config JSONB [not null] // Output-specific config
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, transformer_id, topic_id) [pk]
@@ -215,14 +215,14 @@ enum destination_engine {
 Table destinations {
   tenant_id UUID
   destination_id UUID
-  name varchar(255)
-  engine destination_engine // Enum for destination type
-  config JSONB // Connection details, write settings
+  name varchar(255) [not null]
+  engine destination_engine [not null] // Enum for destination type
+  config JSONB [not null] // Connection details, write settings
 
-  created_by_user_id UUID
-  updated_by_user_id UUID
-  created_at timestamp
-  updated_at timestamp
+  created_by_user_id UUID [not null]
+  updated_by_user_id UUID [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, destination_id) [pk]
@@ -236,15 +236,15 @@ Ref: destinations.updated_by_user_id > users.user_id
 Table pipelines {
   tenant_id UUID
   pipeline_id UUID
-  name varchar(255)
+  name varchar(255) [not null]
   source_id UUID [null]
-  destination_id UUID
-  config JSONB // Pipeline-wide settings
+  destination_id UUID [not null]
+  config JSONB [not null] // Pipeline-wide settings
 
-  created_by_user_id UUID
-  updated_by_user_id UUID
-  created_at timestamp
-  updated_at timestamp
+  created_by_user_id UUID [not null]
+  updated_by_user_id UUID [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, pipeline_id) [pk]
@@ -261,11 +261,11 @@ Table pipeline_transformers {
   tenant_id UUID
   pipeline_id UUID
   transformer_id UUID
-  stage int // Order in pipeline (1, 2, 3, ...)
-  config JSONB // Transformer-specific pipeline config
+  stage int [not null] // Order in pipeline (1, 2, 3, ...)
+  config JSONB [not null] // Transformer-specific pipeline config
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, pipeline_id, transformer_id) [pk]
@@ -282,8 +282,8 @@ Table pipeline_transformer_inputs {
   transformer_id UUID
   topic_id UUID // Input topic from previous stage
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, pipeline_id, transformer_id, topic_id) [pk]
@@ -298,8 +298,8 @@ Table pipeline_destination_inputs {
   pipeline_id UUID
   topic_id UUID // Output topics from last transformer or source to destination as input
 
-  created_at timestamp
-  updated_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 
   indexes {
     (tenant_id, pipeline_id, topic_id) [pk]
@@ -308,3 +308,4 @@ Table pipeline_destination_inputs {
 
 Ref: pipeline_destination_inputs.(tenant_id, pipeline_id) > pipelines.(tenant_id, pipeline_id)
 Ref: pipeline_destination_inputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
+
