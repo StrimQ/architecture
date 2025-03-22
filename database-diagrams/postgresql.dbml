@@ -6,7 +6,7 @@ enum tier {
   platinum [note: 'Platinum tier will get their own dedicated infra']
 }
 
-Table tenants {
+Table tenant {
   tenant_id UUID
   name varchar(255) [not null]
   domain varchar(255) [not null]
@@ -21,9 +21,9 @@ Table tenants {
   }
 }
 
-Ref: tenants.infra_id > tenant_infras.tenant_infra_id
+Ref: tenant.infra_id > tenant_infra.tenant_infra_id
 
-Table users {
+Table user {
   user_id UUID
 
   created_at timestamp [not null]
@@ -34,7 +34,7 @@ Table users {
   }
 }
 
-Table tenant_users {
+Table tenant_user {
   tenant_id UUID
   user_id UUID
 
@@ -46,10 +46,10 @@ Table tenant_users {
   }
 }
 
-Ref: tenant_users.tenant_id > tenants.tenant_id
-Ref: tenant_users.user_id > users.user_id
+Ref: tenant_user.tenant_id > tenant.tenant_id
+Ref: tenant_user.user_id > user.user_id
 
-Table tenant_infras {
+Table tenant_infra {
   tenant_infra_id UUID
   name varchar(255) [not null]
   kafka_brokers "varchar(255)[]" [not null]
@@ -65,7 +65,7 @@ Table tenant_infras {
   }
 }
 
-Table tags {
+Table tag {
   tenant_id UUID
   tag_id UUID
   key varchar(255) [not null]
@@ -81,21 +81,21 @@ Table tags {
   }
 }
 
-Ref: tags.tenant_id > tenants.tenant_id
-Ref: tags.created_by_user_id > users.user_id
-Ref: tags.updated_by_user_id > users.user_id
+Ref: tag.tenant_id > tenant.tenant_id
+Ref: tag.created_by_user_id > user.user_id
+Ref: tag.updated_by_user_id > user.user_id
 
 enum topic_producer_type {
   source
   transformer
 }
 
-Table topics {
+Table topic {
   tenant_id UUID
   topic_id UUID
   name varchar(255) [not null] // Kafka topic name, e.g., "tenant1.source1.collectionA"
   producer_type topic_producer_type [not null]
-  producer_id UUID [not null] // References sources.source_id or transformers.transfomer_id based on producer_type
+  producer_id UUID [not null] // References source.source_id or transformer.transfomer_id based on producer_type
 
   created_at timestamp [not null]
   updated_at timestamp [not null]
@@ -105,14 +105,14 @@ Table topics {
   }
 }
 
-Ref: topics.tenant_id > tenants.tenant_id
+Ref: topic.tenant_id > tenant.tenant_id
 
 enum source_engine {
   mysql
   postgresql
 }
 
-Table sources {
+Table source {
   tenant_id UUID
   source_id UUID
   name varchar(255) [not null]
@@ -129,11 +129,11 @@ Table sources {
   }
 }
 
-Ref: sources.tenant_id > tenants.tenant_id
-Ref: sources.created_by_user_id > users.user_id
-Ref: sources.updated_by_user_id > users.user_id
+Ref: source.tenant_id > tenant.tenant_id
+Ref: source.created_by_user_id > user.user_id
+Ref: source.updated_by_user_id > user.user_id
 
-Table source_outputs {
+Table source_output {
   tenant_id UUID
   source_id UUID
   topic_id UUID
@@ -150,10 +150,10 @@ Table source_outputs {
   }
 }
 
-Ref: source_outputs.(tenant_id, source_id) > sources.(tenant_id, source_id)
-Ref: source_outputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
+Ref: source_output.(tenant_id, source_id) > source.(tenant_id, source_id)
+Ref: source_output.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
-Table transformers {
+Table transformer {
   tenant_id UUID
   transfomer_id UUID
   name varchar(255) [not null]
@@ -169,11 +169,11 @@ Table transformers {
   }
 }
 
-Ref: transformers.tenant_id > tenants.tenant_id
-Ref: transformers.created_by_user_id > users.user_id
-Ref: transformers.updated_by_user_id > users.user_id
+Ref: transformer.tenant_id > tenant.tenant_id
+Ref: transformer.created_by_user_id > user.user_id
+Ref: transformer.updated_by_user_id > user.user_id
 
-Table transformer_inputs {
+Table transformer_input {
   tenant_id UUID
   transformer_id UUID
   topic_id UUID // Input topic consumed by transformer
@@ -187,10 +187,10 @@ Table transformer_inputs {
   }
 }
 
-Ref: transformer_inputs.(tenant_id, transformer_id) > transformers.(tenant_id, transfomer_id)
-Ref: transformer_inputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
+Ref: transformer_input.(tenant_id, transformer_id) > transformer.(tenant_id, transfomer_id)
+Ref: transformer_input.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
-Table transformer_outputs {
+Table transformer_output {
   tenant_id UUID
   transformer_id UUID
   topic_id UUID // Output topic produced by transformer
@@ -204,15 +204,15 @@ Table transformer_outputs {
   }
 }
 
-Ref: transformer_outputs.(tenant_id, transformer_id) > transformers.(tenant_id, transfomer_id)
-Ref: transformer_outputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
+Ref: transformer_output.(tenant_id, transformer_id) > transformer.(tenant_id, transfomer_id)
+Ref: transformer_output.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
 enum destination_engine {
   mysql
   postgresql
 }
 
-Table destinations {
+Table destination {
   tenant_id UUID
   destination_id UUID
   name varchar(255) [not null]
@@ -229,11 +229,11 @@ Table destinations {
   }
 }
 
-Ref: destinations.tenant_id > tenants.tenant_id
-Ref: destinations.created_by_user_id > users.user_id
-Ref: destinations.updated_by_user_id > users.user_id
+Ref: destination.tenant_id > tenant.tenant_id
+Ref: destination.created_by_user_id > user.user_id
+Ref: destination.updated_by_user_id > user.user_id
 
-Table pipelines {
+Table pipeline {
   tenant_id UUID
   pipeline_id UUID
   name varchar(255) [not null]
@@ -251,13 +251,13 @@ Table pipelines {
   }
 }
 
-Ref: pipelines.tenant_id > tenants.tenant_id
-Ref: pipelines.(tenant_id, source_id) > sources.(tenant_id, source_id)
-Ref: pipelines.(tenant_id, destination_id) > destinations.(tenant_id, destination_id)
-Ref: pipelines.created_by_user_id > users.user_id
-Ref: pipelines.updated_by_user_id > users.user_id
+Ref: pipeline.tenant_id > tenant.tenant_id
+Ref: pipeline.(tenant_id, source_id) > source.(tenant_id, source_id)
+Ref: pipeline.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
+Ref: pipeline.created_by_user_id > user.user_id
+Ref: pipeline.updated_by_user_id > user.user_id
 
-Table pipeline_transformers {
+Table pipeline_transformer {
   tenant_id UUID
   pipeline_id UUID
   transformer_id UUID
@@ -273,10 +273,10 @@ Table pipeline_transformers {
   }
 }
 
-Ref: pipeline_transformers.(tenant_id, pipeline_id) > pipelines.(tenant_id, pipeline_id)
-Ref: pipeline_transformers.(tenant_id, transformer_id) > transformers.(tenant_id, transfomer_id)
+Ref: pipeline_transformer.(tenant_id, pipeline_id) > pipeline.(tenant_id, pipeline_id)
+Ref: pipeline_transformer.(tenant_id, transformer_id) > transformer.(tenant_id, transfomer_id)
 
-Table pipeline_transformer_inputs {
+Table pipeline_transformer_input {
   tenant_id UUID
   pipeline_id UUID
   transformer_id UUID
@@ -290,10 +290,10 @@ Table pipeline_transformer_inputs {
   }
 }
 
-Ref: pipeline_transformer_inputs.(tenant_id, pipeline_id, transformer_id) > pipeline_transformers.(tenant_id, pipeline_id, transformer_id)
-Ref: pipeline_transformer_inputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
+Ref: pipeline_transformer_input.(tenant_id, pipeline_id, transformer_id) > pipeline_transformer.(tenant_id, pipeline_id, transformer_id)
+Ref: pipeline_transformer_input.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
-Table pipeline_destination_inputs {
+Table pipeline_destination_input {
   tenant_id UUID
   pipeline_id UUID
   topic_id UUID // Output topics from last transformer or source to destination as input
@@ -306,6 +306,5 @@ Table pipeline_destination_inputs {
   }
 }
 
-Ref: pipeline_destination_inputs.(tenant_id, pipeline_id) > pipelines.(tenant_id, pipeline_id)
-Ref: pipeline_destination_inputs.(tenant_id, topic_id) > topics.(tenant_id, topic_id)
-
+Ref: pipeline_destination_input.(tenant_id, pipeline_id) > pipeline.(tenant_id, pipeline_id)
+Ref: pipeline_destination_input.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
