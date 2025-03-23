@@ -1,4 +1,4 @@
-enum tier {
+enum tenant_tier {
   free_trial [note: 'Free Trial tier will get their infras data wiped after 30 days']
   bronze
   silver
@@ -10,7 +10,7 @@ Table tenant {
   tenant_id UUID
   name varchar(255) [not null]
   domain varchar(255) [not null]
-  tier tier [not null]
+  tier tenant_tier [not null]
   infra_id UUID [not null]
 
   created_at timestamp [not null, default: `NOW()`]
