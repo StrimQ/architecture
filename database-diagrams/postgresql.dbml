@@ -23,18 +23,7 @@ Table tenant {
 
 Ref: tenant.infra_id > tenant_infra.tenant_infra_id
 
-Table user {
-  user_id UUID
-
-  created_at timestamp [not null, default: `NOW()`]
-  updated_at timestamp [not null, default: `NOW()`]
-
-  indexes {
-    (user_id) [pk]
-  }
-}
-
-Table tenant_user {
+Table users {
   tenant_id UUID
   user_id UUID
 
@@ -46,8 +35,7 @@ Table tenant_user {
   }
 }
 
-Ref: tenant_user.tenant_id > tenant.tenant_id
-Ref: tenant_user.user_id > user.user_id
+Ref: users.tenant_id > tenant.tenant_id
 
 Table tenant_infra {
   tenant_infra_id UUID
@@ -82,8 +70,8 @@ Table tag {
 }
 
 Ref: tag.tenant_id > tenant.tenant_id
-Ref: tag.created_by_user_id > user.user_id
-Ref: tag.updated_by_user_id > user.user_id
+Ref: tag.created_by_user_id > users.user_id
+Ref: tag.updated_by_user_id > users.user_id
 
 enum topic_producer_type {
   source
@@ -130,8 +118,24 @@ Table source {
 }
 
 Ref: source.tenant_id > tenant.tenant_id
-Ref: source.created_by_user_id > user.user_id
-Ref: source.updated_by_user_id > user.user_id
+Ref: source.created_by_user_id > users.user_id
+Ref: source.updated_by_user_id > users.user_id
+
+Table source_tag {
+  tenant_id UUID
+  source_id UUID
+  tag_id UUID
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (tenant_id, source_id, tag_id) [pk]
+  }
+}
+
+Ref: source_tag.(tenant_id, source_id) > source.(tenant_id, source_id)
+Ref: source_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 Table source_output {
   tenant_id UUID
@@ -170,8 +174,24 @@ Table transformer {
 }
 
 Ref: transformer.tenant_id > tenant.tenant_id
-Ref: transformer.created_by_user_id > user.user_id
-Ref: transformer.updated_by_user_id > user.user_id
+Ref: transformer.created_by_user_id > users.user_id
+Ref: transformer.updated_by_user_id > users.user_id
+
+Table transformer_tag {
+  tenant_id UUID
+  transformer_id UUID
+  tag_id UUID
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (tenant_id, transformer_id, tag_id) [pk]
+  }
+}
+
+Ref: transformer_tag.(tenant_id, transformer_id) > transformer.(tenant_id, transformer_id)
+Ref: transformer_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 Table transformer_input {
   tenant_id UUID
@@ -230,8 +250,24 @@ Table destination {
 }
 
 Ref: destination.tenant_id > tenant.tenant_id
-Ref: destination.created_by_user_id > user.user_id
-Ref: destination.updated_by_user_id > user.user_id
+Ref: destination.created_by_user_id > users.user_id
+Ref: destination.updated_by_user_id > users.user_id
+
+Table destination_tag {
+  tenant_id UUID
+  destination_id UUID
+  tag_id UUID
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (tenant_id, destination_id, tag_id) [pk]
+  }
+}
+
+Ref: destination_tag.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
+Ref: destination_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 Table pipeline {
   tenant_id UUID
@@ -254,8 +290,24 @@ Table pipeline {
 Ref: pipeline.tenant_id > tenant.tenant_id
 Ref: pipeline.(tenant_id, source_id) > source.(tenant_id, source_id)
 Ref: pipeline.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
-Ref: pipeline.created_by_user_id > user.user_id
-Ref: pipeline.updated_by_user_id > user.user_id
+Ref: pipeline.created_by_user_id > users.user_id
+Ref: pipeline.updated_by_user_id > users.user_id
+
+Table pipeline_tag {
+  tenant_id UUID
+  pipeline_id UUID
+  tag_id UUID
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (tenant_id, pipeline_id, tag_id) [pk]
+  }
+}
+
+Ref: pipeline_tag.(tenant_id, pipeline_id) > pipeline.(tenant_id, pipeline_id)
+Ref: pipeline_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 Table pipeline_transformer {
   tenant_id UUID
