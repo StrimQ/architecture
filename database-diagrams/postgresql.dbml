@@ -274,11 +274,13 @@ Table source_destination_stream {
   id int [pk, increment]
   source_id UUID [not null]
   destination_id UUID [not null]
+  tenant_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 }
 
+Ref: source_destination_stream.tenant_id > tenant.tenant_id
 Ref: source_destination_stream.source_id > source.source_id
 Ref: source_destination_stream.destination_id > destination.destination_id
 
@@ -286,11 +288,13 @@ Table source_transformer_stream {
   id int [pk, increment]
   source_id UUID [not null]
   input_transformer_id UUID [not null]
+  tenant_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 }
 
+Ref: source_transformer_stream.tenant_id > tenant.tenant_id
 Ref: source_transformer_stream.source_id > source.source_id
 Ref: source_transformer_stream.input_transformer_id > transformer.transformer_id
 
@@ -299,21 +303,25 @@ Table transformer_recursive_stream {
   id int [pk, increment]
   input_transformer_id UUID [not null]
   output_transformer_id UUID [not null]
+  tenant_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 }
 
+Ref: transformer_recursive_stream.tenant_id > tenant.tenant_id
 Ref: transformer_recursive_stream.(input_transformer_id, output_transformer_id) > transformer.(transformer_id, transformer_id)
 
 Table transformer_destination_stream {
   id int [pk, increment]
   input_transformer_id UUID [not null]
   destination_id UUID [not null]
+  tenant_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 }
 
+Ref: transformer_destination_stream.tenant_id > tenant.tenant_id
 Ref: transformer_destination_stream.input_transformer_id > transformer.transformer_id
 Ref: transformer_destination_stream.destination_id > destination.destination_id
