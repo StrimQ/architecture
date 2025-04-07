@@ -310,7 +310,8 @@ Table transformer_recursive_stream {
 }
 
 Ref: transformer_recursive_stream.tenant_id > tenant.tenant_id
-Ref: transformer_recursive_stream.(input_transformer_id, output_transformer_id) > transformer.(transformer_id, transformer_id)
+Ref: transformer_recursive_stream.input_transformer_id > transformer.transformer_id
+Ref: transformer_recursive_stream.output_transformer_id > transformer.transformer_id
 
 Table transformer_destination_stream {
   id int [pk, increment]
