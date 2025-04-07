@@ -137,6 +137,7 @@ Table source_tag {
 Ref: source_tag.(tenant_id, source_id) > source.(tenant_id, source_id)
 Ref: source_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
+// Used in conjunction with source JSON config
 Table source_collection {
   source_id UUID
   topic_id UUID
@@ -193,6 +194,7 @@ Table transformer_tag {
 Ref: transformer_tag.(tenant_id, transformer_id) > transformer.(tenant_id, transformer_id)
 Ref: transformer_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
+// Used in conjunction with source JSON config
 Table transformer_input {
   transformer_id UUID
   topic_id UUID // Input topic consumed by transformer
@@ -248,6 +250,27 @@ Table destination {
     (tenant_id, destination_id) [pk]
   }
 }
+
+// similar to transformer_input
+Table destination_collection {
+  destination_id UUID
+  topic_id UUID
+  database_name VARCHAR(255) [not null] // database
+  group_name VARCHAR(255) [not null] // schema/namespace
+  collection_name VARCHAR(255) [not null] // /collection/table
+  tenant_id UUID
+  config JSONB [not null] // Streaming-specific config
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (tenant_id, destination_id, topic_id) [pk]
+  }
+}
+
+Ref: destination_collection.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
+Ref: destination_collection.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
 Ref: destination.tenant_id > tenant.tenant_id
 Ref: destination.created_by_user_id > users.user_id
