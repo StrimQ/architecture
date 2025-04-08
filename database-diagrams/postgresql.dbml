@@ -139,12 +139,12 @@ Ref: source_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 // Used in conjunction with source JSON config
 Table source_collection {
+  tenant_id UUID
   source_id UUID
   topic_id UUID
   database_name VARCHAR(255) [not null] // database
   group_name VARCHAR(255) [not null] // schema/namespace
   collection_name VARCHAR(255) [not null] // /collection/table
-  tenant_id UUID
   config JSONB [not null] // Streaming-specific config
 
   created_at timestamp [not null, default: `NOW()`]
@@ -159,8 +159,8 @@ Ref: source_collection.(tenant_id, source_id) > source.(tenant_id, source_id)
 Ref: source_collection.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
 Table transformer {
-  transformer_id UUID
   tenant_id UUID
+  transformer_id UUID
   name varchar(255) [not null]
   config JSONB [not null] // Flink job config, transformation logic
 
@@ -196,9 +196,9 @@ Ref: transformer_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 // Used in conjunction with source JSON config
 Table transformer_input {
+  tenant_id UUID
   transformer_id UUID
   topic_id UUID // Input topic consumed by transformer
-  tenant_id UUID
   config JSONB [not null] // Input-specific config
 
   created_at timestamp [not null, default: `NOW()`]
@@ -213,9 +213,9 @@ Ref: transformer_input.(tenant_id, transformer_id) > transformer.(tenant_id, tra
 Ref: transformer_input.(tenant_id, topic_id) > topic.(tenant_id, topic_id)
 
 Table transformer_output {
+  tenant_id UUID
   transformer_id UUID
   topic_id UUID // Output topic produced by transformer
-  tenant_id UUID
   config JSONB [not null] // Output-specific config
 
   created_at timestamp [not null, default: `NOW()`]
@@ -235,8 +235,8 @@ enum destination_engine {
 }
 
 Table destination {
-  destination_id UUID
   tenant_id UUID
+  destination_id UUID
   name varchar(255) [not null]
   engine destination_engine [not null] // Enum for destination type
   config JSONB [not null] // Connection details, write settings
@@ -253,12 +253,12 @@ Table destination {
 
 // similar to transformer_input
 Table destination_collection {
+  tenant_id UUID
   destination_id UUID
   topic_id UUID
   database_name VARCHAR(255) [not null] // database
   group_name VARCHAR(255) [not null] // schema/namespace
   collection_name VARCHAR(255) [not null] // /collection/table
-  tenant_id UUID
   config JSONB [not null] // Streaming-specific config
 
   created_at timestamp [not null, default: `NOW()`]
@@ -277,8 +277,8 @@ Ref: destination.created_by_user_id > users.user_id
 Ref: destination.updated_by_user_id > users.user_id
 
 Table destination_tag {
-  destination_id UUID
   tenant_id UUID
+  destination_id UUID
   tag_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
@@ -294,9 +294,9 @@ Ref: destination_tag.(tenant_id, tag_id) > tag.(tenant_id, tag_id)
 
 // streams are created by system, no by_user_id fields
 Table source_destination_stream {
-  source_id UUID [not null]
-  destination_id UUID [not null]
   tenant_id UUID
+  source_id UUID
+  destination_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
@@ -311,53 +311,53 @@ Ref: source_destination_stream.source_id > source.source_id
 Ref: source_destination_stream.destination_id > destination.destination_id
 
 Table source_transformer_stream {
-  source_id UUID [not null]
-  input_transformer_id UUID [not null]
   tenant_id UUID
+  source_id UUID
+  transformer_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 
   indexes {
-    (tenant_id, source_id, input_transformer_id) [pk]
+    (tenant_id, source_id, transformer_id) [pk]
   }
 }
 
 Ref: source_transformer_stream.tenant_id > tenant.tenant_id
 Ref: source_transformer_stream.source_id > source.source_id
-Ref: source_transformer_stream.input_transformer_id > transformer.transformer_id
+Ref: source_transformer_stream.transformer_id > transformer.transformer_id
 
 
 Table transformer_recursive_stream {
-  input_transformer_id UUID [not null]
-  output_transformer_id UUID [not null]
   tenant_id UUID
+  head_transformer_id UUID
+  tail_transformer_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 
   indexes {
-    (tenant_id, input_transformer_id, output_transformer_id) [pk]
+    (tenant_id, head_transformer_id, tail_transformer_id) [pk]
   }
 }
 
 Ref: transformer_recursive_stream.tenant_id > tenant.tenant_id
-Ref: transformer_recursive_stream.input_transformer_id > transformer.transformer_id
-Ref: transformer_recursive_stream.output_transformer_id > transformer.transformer_id
+Ref: transformer_recursive_stream.head_transformer_id > transformer.transformer_id
+Ref: transformer_recursive_stream.tail_transformer_id > transformer.transformer_id
 
 Table transformer_destination_stream {
-  input_transformer_id UUID [not null]
-  destination_id UUID [not null]
   tenant_id UUID
+  transformer_id UUID
+  destination_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 
   indexes {
-    (tenant_id, input_transformer_id, destination_id) [pk]
+    (tenant_id, transformer_id, destination_id) [pk]
   }
 }
 
 Ref: transformer_destination_stream.tenant_id > tenant.tenant_id
-Ref: transformer_destination_stream.input_transformer_id > transformer.transformer_id
+Ref: transformer_destination_stream.transformer_id > transformer.transformer_id
 Ref: transformer_destination_stream.destination_id > destination.destination_id
