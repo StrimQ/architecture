@@ -11,7 +11,7 @@ Table tenant {
   name varchar(255) [not null]
   domain varchar(255) [not null]
   tier tenant_tier [not null]
-  infra_id UUID [not null]
+  tenant_infra_id UUID [not null]
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
@@ -21,21 +21,32 @@ Table tenant {
   }
 }
 
-Ref: tenant.infra_id > tenant_infra.tenant_infra_id
+Ref: tenant.tenant_infra_id > tenant_infra.tenant_infra_id
 
 Table users {
-  tenant_id UUID
   user_id UUID
 
   created_at timestamp [not null, default: `NOW()`]
   updated_at timestamp [not null, default: `NOW()`]
 
   indexes {
-    (tenant_id, user_id) [pk]
+    (user_id) [pk]
   }
 }
 
-Ref: users.tenant_id > tenant.tenant_id
+Table user_tenant {
+  user_id UUID
+  tenant_id UUID
+
+  created_at timestamp [not null, default: `NOW()`]
+  updated_at timestamp [not null, default: `NOW()`]
+
+  indexes {
+    (user_id, tenant_id) [pk]
+  }
+}
+Ref: user_tenant.user_id > users.user_id
+Ref: user_tenant.tenant_id > tenant.tenant_id
 
 Table tenant_infra {
   tenant_infra_id UUID
@@ -101,8 +112,8 @@ enum source_engine {
 }
 
 Table source {
-  source_id UUID
   tenant_id UUID
+  source_id UUID
   name varchar(255) [not null]
   engine source_engine [not null]
   config JSONB [not null] // Connection details, streaming settings
@@ -306,9 +317,8 @@ Table source_destination_stream {
   }
 }
 
-Ref: source_destination_stream.tenant_id > tenant.tenant_id
-Ref: source_destination_stream.source_id > source.source_id
-Ref: source_destination_stream.destination_id > destination.destination_id
+Ref: source_destination_stream.(tenant_id, source_id) > source.(tenant_id, source_id)
+Ref: source_destination_stream.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
 
 Table source_transformer_stream {
   tenant_id UUID
@@ -323,10 +333,8 @@ Table source_transformer_stream {
   }
 }
 
-Ref: source_transformer_stream.tenant_id > tenant.tenant_id
-Ref: source_transformer_stream.source_id > source.source_id
-Ref: source_transformer_stream.transformer_id > transformer.transformer_id
-
+Ref: source_transformer_stream.(tenant_id, source_id) > source.(tenant_id, source_id)
+Ref: source_transformer_stream.(tenant_id, transformer_id) > transformer.(tenant_id, transformer_id)
 
 Table transformer_recursive_stream {
   tenant_id UUID
@@ -341,9 +349,8 @@ Table transformer_recursive_stream {
   }
 }
 
-Ref: transformer_recursive_stream.tenant_id > tenant.tenant_id
-Ref: transformer_recursive_stream.head_transformer_id > transformer.transformer_id
-Ref: transformer_recursive_stream.tail_transformer_id > transformer.transformer_id
+Ref: transformer_recursive_stream.(tenant_id, head_transformer_id) > transformer.(tenant_id, transformer_id)
+Ref: transformer_recursive_stream.(tenant_id, tail_transformer_id) > transformer.(tenant_id, transformer_id)
 
 Table transformer_destination_stream {
   tenant_id UUID
@@ -358,6 +365,5 @@ Table transformer_destination_stream {
   }
 }
 
-Ref: transformer_destination_stream.tenant_id > tenant.tenant_id
-Ref: transformer_destination_stream.transformer_id > transformer.transformer_id
-Ref: transformer_destination_stream.destination_id > destination.destination_id
+Ref: transformer_destination_stream.(tenant_id, transformer_id) > transformer.(tenant_id, transformer_id)
+Ref: transformer_destination_stream.(tenant_id, destination_id) > destination.(tenant_id, destination_id)
